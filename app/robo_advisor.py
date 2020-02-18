@@ -3,18 +3,24 @@ import json
 import csv
 import os
 
+from dotenv import load_dotenv
 import requests
 
+load_dotenv()
+
 #NUMBERS ARE OFF FOR LATEST CLOSE
-#WHY ARE THERE SKIPPED LINES IN CSV
+
 
 
 def to_usd(my_price):
     return "${0:,.2f}".format(my_price)
 
 #INFO INPUTS
+symbol = "MSFT" #TODO ACCEPT USER INPUT
+api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
+request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}"
 
-request_url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo"
+
 response = requests.get(request_url)
 #print(type(response)) #> <class 'requests.models.Response'>
 #print(response.status_code) #>200

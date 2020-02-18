@@ -27,6 +27,16 @@ Please install all packages from the requirements.txt file:
 pip install -r requirements.txt
 ```
 
+### Setup Environment Variable
+
+Before using or developing this application, take a moment to [obtain an AlphaVantage API Key](https://www.alphavantage.co/support/#api-key).
+
+After obtaining an API Key, create a new file in this repository called ".env", and update the contents of the ".env" file to specify your real API Key:
+
+```sh
+ALPHAVANTAGE_API_KEY = "demo"
+```
+
 ## Usage
 Run the python script from the command line:
 
