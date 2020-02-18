@@ -3,9 +3,9 @@
 [Project Description](https://github.com/prof-rossetti/intro-to-python/tree/master/projects/robo-advisor)
 
 
-## Installation
+## Instalatiion
 
-Fork this [repository](https://github.com/cas432/robo-advisor) from Github and then clone your fork to download it locally onto your computer. Then navigate there from the command line:
+Fork this  [repository](https://github.com/cas432/robo-advisor) from Github and then clone your fork to download it locally onto your computer. Then navigate there from the command line:
 
 ```sh
 cd robo-advisor
