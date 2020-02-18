@@ -18,8 +18,8 @@ symbols = []
 
 
 while True: 
-    symbol = input("Please input your stock ticker symbol of choice: ")
-        
+    symbol = input("Please input your stock ticker symbol of choice:")
+         
     
     if symbol == "DONE":
             break
