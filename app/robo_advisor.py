@@ -8,15 +8,32 @@ import requests
 
 load_dotenv()
 
-#NUMBERS ARE OFF FOR LATEST CLOSE
-
-
-
+#USD function
 def to_usd(my_price):
     return "${0:,.2f}".format(my_price)
 
-#INFO INPUTS
-symbol = "MSFT" #TODO ACCEPT USER INPUT
+
+#Get stock symbol
+symbols = []
+
+
+while True: 
+    symbol = input("Please input your stock ticker symbol of choice: ")
+        
+    
+    if symbol == "DONE":
+            break
+    elif float(len(symbol)) <= 5 and symbol.isalpha():
+        symbols.append(symbol)
+    else:
+        print("\n    Please enter a valid symbol or type 'DONE' to finish adding stocks. \n")
+
+            
+
+#must be letters, multiple at once
+#symbol = "MSFT" #TODO ACCEPT USER INPUT
+
+#
 api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
 request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}"
 
