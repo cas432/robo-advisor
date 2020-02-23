@@ -21,7 +21,7 @@ symbols = []
 
 
 while True: 
-    symbol = input("Please input your stock ticker symbol of choice:")
+    symbol = input("Please input your stock ticker symbol of choice: ")
          
     
     if symbol == "DONE":
@@ -57,21 +57,12 @@ for s in symbols:
 
     dates = list(tsd.keys()) #TODO ASSUME LATEST DAY IS FIRST. sort chronologically?
     dates.sort(reverse=True)
-   
-
-
-
 
     latest_day = dates[0]
-   
     last_refreshed = parsed_response["Meta Data"]["3. Last Refreshed"]  
-    
-    
+       
     latest_close = tsd[latest_day]["4. close"]
-    
-
-
-
+   
     #get high price from each day
     high_prices = []
     low_prices = []
@@ -113,19 +104,63 @@ for s in symbols:
     hour = time.strftime("%I:%M %p")
     request_date = str(today) + " " + str(hour)
 
+
+# check if closing is 20% above recent low. check if trending up wards or down
+
+    margin = 0.30
+    threshold = (margin + 1) * recent_low
+
+    if float(latest_close) < threshold: 
+        buy_low = True
+
+ 
+    prev_year = dates[1]
+    prev_price = tsd[prev_year]["4. close"]
+
+    prev_prev_year = dates[2]
+    prev_prev_price = tsd[prev_prev_year]["4. close"]
+
+    if float(latest_close) > float(prev_price) and float(prev_price) > float(prev_prev_price):
+        rising_prices = True
+    else:
+        rising_prices = False
+
+    if buy_low == True and rising_prices == True:
+        recommendation = "HIGH OPPORTUNITY"
+        reason = "The current price is within a 30% margin of the recent lowest price AND the past three stocks are trending upward"
+    
+    elif buy_low == True and rising_prices == False:
+        recommendation = "MEDIUM OPPORTUNITY"
+        reason = "The current price is within a 30% margin of the recent lowest price BUT the past three stocks are not trending upward"
+
+    elif buy_low == False and rising_prices == True:
+        recommendation = "MEDIUM OPPORTUNITY"
+        reason = "The past three stocks are trending upward BUT the current price is not within a 30% margin of the recent lowest price"
+
+    elif buy_low == False and rising_prices == False:
+        recommendation = "LOW OPPORTUNITY"   
+        reason = "The current price is not within a 30% margin of the recent lowest price AND the past three stocks are not trending upward"
+    
+        
+
+    
+
+
+
+    
     print("-------------------------")
     print("SELECTED SYMBOL: " + s)
     print("-------------------------")
     print("REQUESTING STOCK MARKET DATA...")
     print("REQUEST AT: " + request_date)
     print("-------------------------")
-    print("LATEST DAY: " + last_refreshed) #########
-    print("LATEST CLOSE: " + to_usd(float(latest_close))) ##########
+    print("LATEST DAY: " + last_refreshed) 
+    print("LATEST CLOSE: " + to_usd(float(latest_close))) 
     print("RECENT HIGH: " + to_usd(float(recent_high)))
     print("RECENT LOW: " + to_usd(float(recent_low)))
     print("-------------------------")
-    print("RECOMMENDATION: BUY!")
-    print("RECOMMENDATION REASON: TODO")
+    print("RECOMMENDATION: " + recommendation)
+    print("RECOMMENDATION REASON: " + reason)
     print("-------------------------")
     print("WRITING DATA TO CSV: " + csv_file_path)
     print("-------------------------")
@@ -133,8 +168,3 @@ for s in symbols:
     print("-------------------------")
 
 
-
-#detect/handle response errors
-#if "Error Message" in response.text:
-     #   print("OOOPS")
-      #  exit()
