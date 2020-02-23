@@ -2,7 +2,8 @@
 import json
 import csv
 import os
-
+import datetime
+import time
 from dotenv import load_dotenv
 import requests
 
@@ -55,21 +56,17 @@ for s in symbols:
     tsd = parsed_response["Time Series (Daily)"]
 
     dates = list(tsd.keys()) #TODO ASSUME LATEST DAY IS FIRST. sort chronologically?
-    
-    print(dates[0])
-    print(dates[1])
-    print(dates[2])
-    dates.sort()
-    print(dates[0])
-    print(dates[1])
-    print(dates[3])
-
+    dates.sort(reverse=True)
+   
 
 
 
 
     latest_day = dates[0]
+   
     last_refreshed = parsed_response["Meta Data"]["3. Last Refreshed"]  
+    
+    
     latest_close = tsd[latest_day]["4. close"]
     
 
@@ -110,11 +107,17 @@ for s in symbols:
                 "volume": daily_prices["5. volume"]
             })
 
+    from datetime import date
+    today = datetime.date.today().strftime("%Y/%m/%d")
+    
+    hour = time.strftime("%I:%M %p")
+    request_date = str(today) + " " + str(hour)
+
     print("-------------------------")
     print("SELECTED SYMBOL: " + s)
     print("-------------------------")
     print("REQUESTING STOCK MARKET DATA...")
-    print("REQUEST AT: 2018-02-20 02:00pm")
+    print("REQUEST AT: " + request_date)
     print("-------------------------")
     print("LATEST DAY: " + last_refreshed) #########
     print("LATEST CLOSE: " + to_usd(float(latest_close))) ##########
