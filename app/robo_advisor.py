@@ -55,7 +55,19 @@ for s in symbols:
     tsd = parsed_response["Time Series (Daily)"]
 
     dates = list(tsd.keys()) #TODO ASSUME LATEST DAY IS FIRST. sort chronologically?
-   
+    
+    print(dates[0])
+    print(dates[1])
+    print(dates[2])
+    dates.sort()
+    print(dates[0])
+    print(dates[1])
+    print(dates[3])
+
+
+
+
+
     latest_day = dates[0]
     last_refreshed = parsed_response["Meta Data"]["3. Last Refreshed"]  
     latest_close = tsd[latest_day]["4. close"]
