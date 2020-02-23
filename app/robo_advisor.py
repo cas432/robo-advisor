@@ -13,6 +13,7 @@ def to_usd(my_price):
     return "${0:,.2f}".format(my_price)
 
 
+api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
 #Get stock symbol
 symbols = []
 
@@ -29,7 +30,14 @@ while True:
             break
 
     elif float(len(symbol)) <= 5 and symbol.isalpha():
-        symbols.append(symbol)
+        request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}"
+        response = requests.get(request_url)
+            
+        if "Error Message" in response.text:
+            print("\n    OOPS!: Sorry! This is not a existing stock symbol.\n")
+            
+        else:
+            symbols.append(symbol)
         
     else:
         print("\n    Please enter a valid symbol or type 'DONE' to finish adding stocks. \n")
@@ -37,23 +45,14 @@ while True:
 
 for s in symbols:
 
-
-    api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
     request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
-
-
     response = requests.get(request_url)
 
-    if "Error Message" in response.text:
-        print("OOOPS")
-        break
-    else:
-
-        parsed_response = json.loads(response.text)
+    parsed_response = json.loads(response.text)
 
         
 
-        tsd = parsed_response["Time Series (Daily)"]
+    tsd = parsed_response["Time Series (Daily)"]
 
     dates = list(tsd.keys()) #TODO ASSUME LATEST DAY IS FIRST. sort chronologically?
    
@@ -100,7 +99,7 @@ for s in symbols:
             })
 
     print("-------------------------")
-    print("SELECTED SYMBOL: XYZ")
+    print("SELECTED SYMBOL: " + s)
     print("-------------------------")
     print("REQUESTING STOCK MARKET DATA...")
     print("REQUEST AT: 2018-02-20 02:00pm")
