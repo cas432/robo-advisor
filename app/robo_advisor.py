@@ -168,38 +168,38 @@ for s in symbols:
     print("-------------------------\n")
 
     #6. GRAPHS
-    # plotly.offline.plot({
-    # "data": [go.Scatter(x=dates, y=prices_list)],
-    # "layout": go.Layout(title="Historical Stock Prices: " + s)
-    # }, auto_open=True)
+    plotly.offline.plot({
+    "data": [go.Scatter(x=dates, y=prices_list)],
+    "layout": go.Layout(title="Historical Stock Prices: " + s)
+    }, auto_open=True)
     
     #7. SMS OUTPUT 
-    # sms_margin =  0.05
-    # price_today = prices_list_no_usd[0]
-    # price_yesterday = prices_list_no_usd[1]
+    sms_margin =  0.05
+    price_today = prices_list_no_usd[0]
+    price_yesterday = prices_list_no_usd[1]
 
      
-    # upperbound = (1 + sms_margin) * float(price_today)
-    # lowerbound = (1 - sms_margin) * float(price_yesterday)
+    upperbound = (1 + sms_margin) * float(price_today)
+    lowerbound = (1 - sms_margin) * float(price_yesterday)
     
-    # format_price_today = prices_list[0]
-    # format_price_yesterday = prices_list[1]
+    format_price_today = prices_list[0]
+    format_price_yesterday = prices_list[1]
 
-    # TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
-    # TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
-    # SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
-    # RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
+    TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
+    TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
+    SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
+    RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
 
-    # client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-    # if price_today > upperbound: 
-    #     content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today + " compared to " + format_price_yesterday + " yesterday."        
+    if price_today > upperbound: 
+        content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today + " compared to " + format_price_yesterday + " yesterday."        
     
-    # elif price_today < lowerbound:
-    #     content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today+ " compared to " +format_price_yesterday + " yesterday."        
+    elif price_today < lowerbound:
+        content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has decreased by more than 5% within the past day! It is currently at " + format_price_today+ " compared to " +format_price_yesterday + " yesterday."        
         
 
-    # message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
+    message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
   
 
 print("-------------------------")   
