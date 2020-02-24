@@ -5,6 +5,7 @@ import datetime
 import time
 from dotenv import load_dotenv
 import requests
+import matplotlib.pyplot as plt
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ load_dotenv()
 symbols = []
 high_prices = []
 low_prices = []
+prices_list = []
 
 x=0
 
@@ -21,7 +23,7 @@ def to_usd(my_price):
 
 
 api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
-#Get stock symbol
+
 
 
 
@@ -53,30 +55,32 @@ while True:
 
 
 for s in symbols:
-    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
+    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}&outputsize=full"
     response = requests.get(request_url)
     parsed_response = json.loads(response.text)
-
 
     tsd = parsed_response["Time Series (Daily)"]
     dates = list(tsd.keys()) 
     dates.sort(reverse=True)
-    
+
+
     latest_day = dates[0]
     last_refreshed = parsed_response["Meta Data"]["3. Last Refreshed"]  
      
     latest_close = tsd[latest_day]["4. close"]
 
-      #recent_high = max(high_prices)
 
-    for date in dates:
+    for date in dates[:365]:
         high_price = tsd[date]["2. high"]
         high_prices.append(float(high_price))
         low_price = tsd[date]["3. low"]
         low_prices.append(float(low_price))
+
+        close_price = tsd[date]["4. close"]
+        prices_list.append(to_usd(float(close_price)))
+
     recent_high = max(high_prices)
     recent_low = min(low_prices)
-
 
 
 
@@ -165,6 +169,16 @@ for s in symbols:
     print("-------------------------")
     print("WRITING DATA TO CSV: " + csv_file_path)
     print("-------------------------\n")
+
+   
+ 
+
+    plt.plot(dates[:10], prices_list[:10], color='g')
+
+    plt.xlabel('Countries')
+    plt.ylabel('Population in million')
+    plt.title('Pakistan India Population till 2010')
+    plt.show()
 
 print("-------------------------")   
 print("HAPPY INVESTING!")
