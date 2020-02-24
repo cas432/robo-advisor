@@ -3,35 +3,32 @@ import csv
 import os
 import datetime
 import time
-from dotenv import load_dotenv
 import requests
 import plotly
 import plotly.graph_objs as go
+from datetime import date
+from dotenv import load_dotenv
+from twilio.rest import Client
+
 
 load_dotenv()
-
-#USD function
 
 symbols = []
 high_prices = []
 low_prices = []
-
-
 x=0
+
+print("\nWelcome to our automatic stock advisor service!")
+print("Please enter any stock(s) you want to know more about. When finished, type 'DONE'.\n")
 
 def to_usd(my_price):
     return "${0:,.2f}".format(my_price)
 
-
 api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
 
-
-
-
-
-
+#1.  INPUT VALIDATION
 while True: 
-    symbol = input("Please input your stock ticker symbol of choice: ")
+    symbol = input("Please input a stock symbol: ")
 
         
     if symbol == "DONE":
@@ -45,20 +42,22 @@ while True:
         response = requests.get(request_url)
 
         if "Error Message" in response.text:
-            print("\n    OOPS!: Sorry! This is not a existing stock symbol.\n")
+            print("\n    OOPS!: Sorry! This symbol doesn't seem to exist. Please try again.\n")
             
         else:
             symbols.append(symbol)
      
 
     else:
-        print("\n    Please enter a valid symbol or type 'DONE' to finish adding stocks. \n")
+        print("\n    Sorry your input is not valid. Please enter a symbol consisting of 1-5 alphabetic letters. \n")
 
-
+#2. READING STOCK INFORMATION
 for s in symbols:
+    
     dates = []
     prices_list = []
     prices_list_no_usd = []
+
     request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
     response = requests.get(request_url)
     parsed_response = json.loads(response.text)
@@ -70,7 +69,6 @@ for s in symbols:
 
     latest_day = dates[0]
     last_refreshed = parsed_response["Meta Data"]["3. Last Refreshed"]  
-     
     latest_close = tsd[latest_day]["4. close"]
 
 
@@ -88,9 +86,7 @@ for s in symbols:
     recent_low = min(low_prices)
 
 
-
-    #csv_file_path = "data/prices.csv" # a relative filepath
-
+ 
     csv_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "prices_" + s + ".csv")
 
     csv_headers = ["timestamp", "open", "high", "low", "close", "volume"]
@@ -110,17 +106,13 @@ for s in symbols:
                 "volume": daily_prices["5. volume"]
             })
 
-
-
-    from datetime import date
+#3. GET DATES
     today = datetime.date.today().strftime("%Y/%m/%d")
-
-    
 
     hour = time.strftime("%I:%M %p")
     request_date = str(today) + " " + str(hour)
 
-
+#4. RECOMMENDATIONS
     margin = 0.30
     threshold = (margin + 1) * recent_low
 
@@ -156,9 +148,9 @@ for s in symbols:
         recommendation = "LOW OPPORTUNITY"   
         reason = "The current price is not within a 30% margin of the recent lowest price AND the past three stocks are not trending upward"
     
+    #5. OUTPUT
     x = x + 1 #keep counter for output
 
-       
     print("\n" + str(x) + ". SELECTED SYMBOL: " + s)
     print("-------------------------")
     print("REQUESTING STOCK MARKET DATA...")
@@ -175,62 +167,40 @@ for s in symbols:
     print("WRITING DATA TO CSV: " + csv_file_path)
     print("-------------------------\n")
 
-
-
+    #6. GRAPHS
     # plotly.offline.plot({
     # "data": [go.Scatter(x=dates, y=prices_list)],
     # "layout": go.Layout(title="Historical Stock Prices: " + s)
-    #  }, auto_open=True)
-    from dotenv import load_dotenv
-    from twilio.rest import Client
-  
-    sms_margin =  0.05
-    price_today = prices_list_no_usd[0]
-    price_yesterday = prices_list_no_usd[1]
+    # }, auto_open=True)
+    
+    #7. SMS OUTPUT 
+    # sms_margin =  0.05
+    # price_today = prices_list_no_usd[0]
+    # price_yesterday = prices_list_no_usd[1]
 
      
-    sms_increase = (1 + sms_margin) * float(price_today)
-    sms_decrease = (1 - sms_margin) * float(price_yesterday)
+    # upperbound = (1 + sms_margin) * float(price_today)
+    # lowerbound = (1 - sms_margin) * float(price_yesterday)
     
+    # format_price_today = prices_list[0]
+    # format_price_yesterday = prices_list[1]
 
+    # TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
+    # TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
+    # SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
+    # RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
+
+    # client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    # if price_today > upperbound: 
+    #     content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today + " compared to " + format_price_yesterday + " yesterday."        
     
+    # elif price_today < lowerbound:
+    #     content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today+ " compared to " +format_price_yesterday + " yesterday."        
+        
 
-    TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
-    TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
-    SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
-    RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
-
-
-    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-
-    if price_today > sms_increase: 
-        content = "PRICE MOVEMENT ALERT: Hello! We have detected that your stock " + s + " has increased by more than 5% within the past day! It is currently at " 
-        + prices_list[0] + "compared to " + prices_list[1] + " yesterday."
-    
-    elif price_today < sms_decrease:
-        content = "PRICE MOVEMENT ALERT: Hello! We have detected that your stock " + s + " has decreased by more than 5% within the past day! It is currently at " 
-        + prices_list[0] + "compared to " + prices_list[1] + " yesterday."
-
-    message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
-
-
-
-    print("----------------------")
-    print("SMS PRICE MOVEMENT ALERT")
-    print("----------------------")
-    print("RESPONSE: ", type(message))
-    print("FROM:", message.from_)
-    print("TO:", message.to)
-    print("BODY:", message.body)
-    print("PROPERTIES:")
-    print(message._properties)
-
-
-
-
-
-
-
+    # message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
+  
 
 print("-------------------------")   
 print("HAPPY INVESTING!")
