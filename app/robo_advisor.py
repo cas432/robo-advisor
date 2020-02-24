@@ -5,7 +5,8 @@ import datetime
 import time
 from dotenv import load_dotenv
 import requests
-import matplotlib.pyplot as plt
+import plotly
+import plotly.graph_objs as go
 
 load_dotenv()
 
@@ -14,7 +15,7 @@ load_dotenv()
 symbols = []
 high_prices = []
 low_prices = []
-prices_list = []
+
 
 x=0
 
@@ -55,7 +56,10 @@ while True:
 
 
 for s in symbols:
-    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}&outputsize=full"
+    dates = []
+    prices_list = []
+    prices_list_no_usd = []
+    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
     response = requests.get(request_url)
     parsed_response = json.loads(response.text)
 
@@ -70,7 +74,7 @@ for s in symbols:
     latest_close = tsd[latest_day]["4. close"]
 
 
-    for date in dates[:365]:
+    for date in dates:
         high_price = tsd[date]["2. high"]
         high_prices.append(float(high_price))
         low_price = tsd[date]["3. low"]
@@ -78,6 +82,7 @@ for s in symbols:
 
         close_price = tsd[date]["4. close"]
         prices_list.append(to_usd(float(close_price)))
+        prices_list_no_usd.append(float(close_price))
 
     recent_high = max(high_prices)
     recent_low = min(low_prices)
@@ -151,15 +156,15 @@ for s in symbols:
         recommendation = "LOW OPPORTUNITY"   
         reason = "The current price is not within a 30% margin of the recent lowest price AND the past three stocks are not trending upward"
     
-    x = x + 1    
+    x = x + 1 #keep counter for output
 
-   
+       
     print("\n" + str(x) + ". SELECTED SYMBOL: " + s)
     print("-------------------------")
     print("REQUESTING STOCK MARKET DATA...")
     print("REQUEST AT: " + request_date)
     print("-------------------------")
-    print("LATEST DAY: " + last_refreshed) 
+    print("LATEST DAY: " + latest_day) 
     print("LATEST CLOSE: " + to_usd(float(latest_close))) 
     print("RECENT HIGH: " + to_usd(float(recent_high)))
     print("RECENT LOW: " + to_usd(float(recent_low)))
@@ -170,16 +175,65 @@ for s in symbols:
     print("WRITING DATA TO CSV: " + csv_file_path)
     print("-------------------------\n")
 
-   
- 
 
-    plt.plot(dates[:10], prices_list[:10], color='g')
 
-    plt.xlabel('Countries')
-    plt.ylabel('Population in million')
-    plt.title('Pakistan India Population till 2010')
-    plt.show()
+    # plotly.offline.plot({
+    # "data": [go.Scatter(x=dates, y=prices_list)],
+    # "layout": go.Layout(title="Historical Stock Prices: " + s)
+    #  }, auto_open=True)
+    from dotenv import load_dotenv
+    from twilio.rest import Client
+  
+    sms_margin =  0.05
+    price_today = prices_list_no_usd[0]
+    price_yesterday = prices_list_no_usd[1]
+
+     
+    sms_increase = (1 + sms_margin) * float(price_today)
+    sms_decrease = (1 - sms_margin) * float(price_yesterday)
+    
+
+    
+
+    TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
+    TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
+    SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
+    RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
+
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    if price_today > sms_increase: 
+        content = "PRICE MOVEMENT ALERT: Hello! We have detected that your stock " + s + " has increased by more than 5% within the past day! It is currently at " 
+        + prices_list[0] + "compared to " + prices_list[1] + " yesterday."
+    
+    elif price_today < sms_decrease:
+        content = "PRICE MOVEMENT ALERT: Hello! We have detected that your stock " + s + " has decreased by more than 5% within the past day! It is currently at " 
+        + prices_list[0] + "compared to " + prices_list[1] + " yesterday."
+
+    message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
+
+
+
+    print("----------------------")
+    print("SMS PRICE MOVEMENT ALERT")
+    print("----------------------")
+    print("RESPONSE: ", type(message))
+    print("FROM:", message.from_)
+    print("TO:", message.to)
+    print("BODY:", message.body)
+    print("PROPERTIES:")
+    print(message._properties)
+
+
+
+
+
+
+
 
 print("-------------------------")   
 print("HAPPY INVESTING!")
 print("-------------------------")
+
+
