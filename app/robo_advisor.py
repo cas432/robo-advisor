@@ -20,7 +20,7 @@ low_prices = []
 x=0
 i=0
 
-print("FFFFFFFFFFFFUCKKK")
+
 print("\nWelcome to our automated stock advisory service!\n")
 print("Please enter any stock(s) that you want to know more about (Max of 5 at a time).")
 print("When finished, type 'DONE'.\n")
@@ -37,7 +37,7 @@ while True:
         
     if symbol == "DONE":
         if len(symbols) == 0:
-            print("\n    Please enter at least one stock symbol\n")
+            print("\n    Please enter at least one stock symbol.\n")
         else:
             break
 
@@ -52,7 +52,7 @@ while True:
             break
 
     else:
-        print("\n    Sorry your input is not valid. Please enter a symbol consisting of 1-5 alphabetic letters. \n")
+        print("\n    Sorry your input is not valid. Please enter a symbol consisting of 1-5 letters. \n")
 
 
     
@@ -84,6 +84,8 @@ for s in symbols:
         last_refreshed = parsed_response["Meta Data"]["3. Last Refreshed"]  
         latest_close = tsd[latest_day]["4. close"]
 
+        high_prices = []
+        low_prices = []
 
         for date in dates:
             high_price = tsd[date]["2. high"]
@@ -146,19 +148,19 @@ for s in symbols:
 
         if buy_low == True and rising_prices == True:
             recommendation = "HIGH OPPORTUNITY"
-            reason = "The current price is within a 30% margin of the recent lowest price AND the past three stocks are trending upward. This is a great time to invest!"
+            reason = "The current price is within a 30% margin of the recent lowest price AND the past three stocks prices are trending upward. This is a great time to invest!"
         
         elif buy_low == True and rising_prices == False:
             recommendation = "MEDIUM OPPORTUNITY"
-            reason = "The current price is within a 30% margin of the recent lowest price BUT the past three stocks are not trending upward.This is an ok time to invest"
+            reason = "The current price is within a 30% margin of the recent lowest price BUT the past three stocks prices have not been trending upward. This is an ok time to invest"
 
         elif buy_low == False and rising_prices == True:
             recommendation = "MEDIUM OPPORTUNITY"
-            reason = "The past three stocks are trending upward BUT the current price is not within a 30% margin of the recent lowest price.This is an ok time to invest"
+            reason = "The past three stocks prices are trending upward BUT the current price is not within a 30% margin of the recent lowest price. This is an ok time to invest"
 
         elif buy_low == False and rising_prices == False:
             recommendation = "LOW OPPORTUNITY"   
-            reason = "The current price is not within a 30% margin of the recent lowest price AND the past three stocks are not trending upward. This is an bad time to invest"
+            reason = "The current price is not within a 30% margin of the recent lowest price AND the past three stocks prices have not been trending upward. This is an bad time to invest"
         
         #5. OUTPUT
         print("\n" + str(x) + ". SELECTED SYMBOL: " + s)
@@ -177,51 +179,46 @@ for s in symbols:
         print("WRITING DATA TO CSV: " + csv_file_path)
         print("-------------------------\n")
 
+        #6. GRAPHS
+        plotly.offline.plot({
+        "data": [go.Scatter(x=dates, y=prices_list_no_usd)],
+        "layout": go.Layout(yaxis=dict(tickprefix="$", tickangle=45), title="Historical Stock Prices: " + s)
+        }, auto_open=True) 
 
-
-#         # #6. GRAPHS
-#         plotly.offline.plot({
-#         "data": [go.Scatter(x=dates, y=prices_list_no_usd)],
-#         "layout": go.Layout(yaxis=dict(tickprefix="$", tickangle=45), title="Historical Stock Prices: " + s)
-#         }, auto_open=True) 
-
-        
-
-       
-    
-        
-#         # #7. SMS OUTPUT 
-#         sms_margin =  0.05
-#         price_today = prices_list_no_usd[0]
-#         price_yesterday = prices_list_no_usd[1]
+             
+         #7. SMS OUTPUT 
+        sms_margin =  0.05
+        price_today = prices_list_no_usd[0]
+        price_yesterday = prices_list_no_usd[1]
 
         
-#         upperbound = (1 + sms_margin) * float(price_today)
-#         lowerbound = (1 - sms_margin) * float(price_yesterday)
+        upperbound = (1 + sms_margin) * float(price_today)
+        lowerbound = (1 - sms_margin) * float(price_yesterday)
         
-#         format_price_today = prices_list[0]
-#         format_price_yesterday = prices_list[1]
+        format_price_today = prices_list[0]
+        format_price_yesterday = prices_list[1]
 
-#         TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
-#         TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
-#         SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
-#         RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
+        TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "OOPS, please specify env var called 'TWILIO_ACCOUNT_SID'")
+        TWILIO_AUTH_TOKEN  = os.environ.get("TWILIO_AUTH_TOKEN", "OOPS, please specify env var called 'TWILIO_AUTH_TOKEN'")
+        SENDER_SMS  = os.environ.get("SENDER_SMS", "OOPS, please specify env var called 'SENDER_SMS'")
+        RECIPIENT_SMS  = os.environ.get("RECIPIENT_SMS", "OOPS, please specify env var called 'RECIPIENT_SMS'")
 
-#         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-#         if price_today > upperbound: 
-#             content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today + " compared to " + "its price of" + format_price_yesterday + " yesterday."        
-#             message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
-#         elif price_today < lowerbound:
-#             content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has decreased by more than 5% within the past day! It is currently at " + format_price_today+ " compared to its price of " + format_price_yesterday + " yesterday."        
-#             message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
-#         else:
-#             break
+        if price_today > upperbound: 
+            content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has increased by more than 5% within the past day! It is currently at " + format_price_today + " compared to " + "its price of" + format_price_yesterday + " yesterday."        
+            message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
+        elif price_today < lowerbound:
+            content = "PRICE MOVEMENT ALERT: Hello! We have detected that the stock '" + s + "' has decreased by more than 5% within the past day! It is currently at " + format_price_today+ " compared to its price of " + format_price_yesterday + " yesterday."        
+            message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
+        else:
+            pass
+            
         
     
 
-# print("-------------------------")   
-# print("HAPPY INVESTING!")
-# print("-------------------------")
+print("-------------------------")   
+print("HAPPY INVESTING!")
+print("-------------------------")
 
 
