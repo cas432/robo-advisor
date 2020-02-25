@@ -15,8 +15,6 @@ from twilio.rest import Client
 load_dotenv()
 
 symbols = []
-high_prices = []
-low_prices = []
 x=0
 i=0
 
@@ -71,7 +69,7 @@ for s in symbols:
     x = x + 1 #keep counter for numbers
 
     if "Error Message" in response.text:
-        print("\n" + str(x) + ". OOPS!: Sorry! I couldn't seem to find any trading data for the '" + s + "' symbol. Sorry!\n")
+        print("\n" + str(x) + ". OOPS!: I couldn't seem to find any trading data for the '" + s + "' symbol. Sorry!\n")
             
     else:
 
@@ -148,19 +146,19 @@ for s in symbols:
 
         if buy_low == True and rising_prices == True:
             recommendation = "HIGH OPPORTUNITY"
-            reason = "The current price is within a 30% margin of the recent lowest price AND the past three stocks prices are trending upward. This is a great time to invest!"
+            reason = "The latest closing price is within 30% of the recent lowest price AND the past three stock prices are trending upward. This is a great time to invest!"
         
         elif buy_low == True and rising_prices == False:
             recommendation = "MEDIUM OPPORTUNITY"
-            reason = "The current price is within a 30% margin of the recent lowest price BUT the past three stocks prices have not been trending upward. This is an ok time to invest"
+            reason = "The latest closing price is within 30% of the recent lowest price BUT the past three stock prices have not been trending upward. This is an ok time to invest."
 
         elif buy_low == False and rising_prices == True:
             recommendation = "MEDIUM OPPORTUNITY"
-            reason = "The past three stocks prices are trending upward BUT the current price is not within a 30% margin of the recent lowest price. This is an ok time to invest"
+            reason = "The past three stock prices are trending upward BUT the latest closing price is not within 30% of the recent lowest price. This is an ok time to invest."
 
         elif buy_low == False and rising_prices == False:
             recommendation = "LOW OPPORTUNITY"   
-            reason = "The current price is not within a 30% margin of the recent lowest price AND the past three stocks prices have not been trending upward. This is an bad time to invest"
+            reason = "The latest closing price is not within 30% of the recent lowest price AND the past three stock prices have not been trending upward. This is an bad time to invest!"
         
         #5. OUTPUT
         print("\n" + str(x) + ". SELECTED SYMBOL: " + s)
@@ -213,9 +211,7 @@ for s in symbols:
             message = client.messages.create(to=RECIPIENT_SMS, from_=SENDER_SMS, body=content)
         else:
             pass
-            
-        
-    
+      
 
 print("-------------------------")   
 print("HAPPY INVESTING!")
