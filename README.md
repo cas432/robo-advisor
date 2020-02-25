@@ -3,7 +3,7 @@
 [Project Description](https://github.com/prof-rossetti/intro-to-python/tree/master/projects/robo-advisor)
 
 
-## Instalatiion
+## Instalation
 
 Fork this  [repository](https://github.com/cas432/robo-advisor) from Github and then clone your fork to download it locally onto your computer. Then navigate there from the command line:
 
@@ -39,7 +39,7 @@ ALPHAVANTAGE_API_KEY = "xxx"
 
 Additionally, in order to receive SMS updates, you must [sign up for a Twilio account](https://www.twilio.com/try-twilio). Click the link in the confiration email to verify your account and confirm the code sent to your phone. 
 
-Then, create a new project with "Programmable SMS" capabilities. From the console you can view the project's Account SID and Auth Token. Make sure to update the contents of the ".env" file to specify these values as environment variable.
+Then, create a new project with "Programmable SMS" capabilities. From the console you can view the project's Account SID and Auth Token. Make sure to update the contents of the ".env" file to specify these values as environment variables.
 
 ```sh
 TWILIO_ACCOUNT_SID = "xxx"
