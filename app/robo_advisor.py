@@ -57,6 +57,12 @@ def sms_math_lower(sms_margin, price_yesterday):
     lowerbound = (1 - sms_margin) * float(price_yesterday)
     return lowerbound
 
+def get_url(s,api_key):
+    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
+    response = requests.get(request_url)
+    return response
+    
+
 if __name__ == "__main__":
 
     print_message("Welcome to our automated stock advisory service!")
@@ -89,7 +95,7 @@ if __name__ == "__main__":
                 break
 
         else:
-            print("\n    Sorry your input is not valid. Please enter a symbol consisting of 1-5 letters. \n")
+            print("\n    Sorry your input is not valid. Please enter a symbol consisting of 1-5 letters[ (Ex. MSFT)]. \n")
 
 
         
@@ -101,10 +107,21 @@ if __name__ == "__main__":
         prices_list = []
         prices_list_no_usd = []
 
+        response = get_url(s,api_key)
+        print(json.loads(response.text).keys())
+        exit()
+
+       
+        #request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
         
-        request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
+        
         response = requests.get(request_url)
+        print(json.loads(response.text).keys())
+        exit()
+
+    
         parsed_response = json.loads(response.text)
+        
         
         x = x + 1 #keep counter for numbers
 
@@ -212,9 +229,9 @@ if __name__ == "__main__":
             print("-------------------------")
             print("RECOMMENDATION: " + recommendation)
             print("RECOMMENDATION REASON: " + reason)
-           # print("-------------------------")
+
             print_message("WRITING DATA TO CSV: " + csv_file_path)
-          #  print("-------------------------\n")
+
 
             #6. GRAPHS
             get_graph(dates, prices_list_no_usd,s)
@@ -227,8 +244,6 @@ if __name__ == "__main__":
 
             lowerbound = sms_math_lower(sms_margin,price_yesterday)
             upperbound = sms_math_upper(sms_margin,price_today)
-            #upperbound = (1 + sms_margin) * float(price_today)
-            #lowerbound = (1 - sms_margin) * float(price_yesterday)
             
             format_price_today = prices_list[0]
             format_price_yesterday = prices_list[1]
