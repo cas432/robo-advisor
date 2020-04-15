@@ -23,10 +23,38 @@ def to_usd(my_price):
     '''Convert numeric value into currency formatting'''
     return f"${my_price:,.2f}"
 
+def print_message(message):
+    '''Formatting for header/footer'''
+    print("-------------------------")
+    print(message)
+    print("-------------------------")
+
+def get_url(s, api_key):
+    '''Get URL'''
+    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
+    response = requests.get(request_url)
+    parsed_response = json.loads(response.text)
+    return parsed_response
+
+def get_graph(dates, prices_list_no_usd,s):
+    plotly.offline.plot({
+    "data": [go.Scatter(x=dates, y=prices_list_no_usd)],
+    "layout": go.Layout(yaxis=dict(tickprefix="$", tickangle=45), title="Historical Stock Prices: " + s)
+    }, auto_open=True) 
+
+def get_date():
+    today = datetime.date.today().strftime("%Y/%m/%d")
+
+    hour = time.strftime("%I:%M %p")
+    request_date = str(today) + " " + str(hour)
+
+    return request_date
+
 if __name__ == "__main__":
 
-    print("\nWelcome to our automated stock advisory service!\n")
-    print("Please enter any stock(s) that you want to know more about (Max of 5 at a time).")
+    print_message("Welcome to our automated stock advisory service!")
+
+    print("\nPlease enter any stock(s) that you want to know more about (Max of 5 at a time).")
     print("When finished, type 'DONE'.\n")
 
 
@@ -66,6 +94,7 @@ if __name__ == "__main__":
         prices_list = []
         prices_list_no_usd = []
 
+        
         request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
         response = requests.get(request_url)
         parsed_response = json.loads(response.text)
@@ -123,10 +152,11 @@ if __name__ == "__main__":
                     })
 
         #3. GET DATES
-            today = datetime.date.today().strftime("%Y/%m/%d")
+            request_date = get_date()
+            #today = datetime.date.today().strftime("%Y/%m/%d")
 
-            hour = time.strftime("%I:%M %p")
-            request_date = str(today) + " " + str(hour)
+            #hour = time.strftime("%I:%M %p")
+            #request_date = str(today) + " " + str(hour)
 
         #4. RECOMMENDATIONS
             margin = 0.30
@@ -164,6 +194,7 @@ if __name__ == "__main__":
                 recommendation = "LOW OPPORTUNITY"   
                 reason = "The latest closing price is not within 30% of the recent lowest price AND the past three stock prices have not been trending upward. This is an bad time to invest!"
             
+            
             #5. OUTPUT
             print("\n" + str(x) + ". SELECTED SYMBOL: " + s)
             print("-------------------------")
@@ -177,16 +208,13 @@ if __name__ == "__main__":
             print("-------------------------")
             print("RECOMMENDATION: " + recommendation)
             print("RECOMMENDATION REASON: " + reason)
-            print("-------------------------")
-            print("WRITING DATA TO CSV: " + csv_file_path)
-            print("-------------------------\n")
+           # print("-------------------------")
+            print_message("WRITING DATA TO CSV: " + csv_file_path)
+          #  print("-------------------------\n")
 
             #6. GRAPHS
-            plotly.offline.plot({
-            "data": [go.Scatter(x=dates, y=prices_list_no_usd)],
-            "layout": go.Layout(yaxis=dict(tickprefix="$", tickangle=45), title="Historical Stock Prices: " + s)
-            }, auto_open=True) 
-
+            get_graph(dates, prices_list_no_usd,s)
+            
                 
             #7. SMS OUTPUT 
             sms_margin =  0.05
@@ -216,9 +244,7 @@ if __name__ == "__main__":
             else:
                 pass
         
-
-    print("-------------------------")   
-    print("HAPPY INVESTING!")
-    print("-------------------------")
+      
+    print_message("HAPPY INVESTING!")
 
 
