@@ -44,11 +44,18 @@ def get_graph(dates, prices_list_no_usd,s):
 
 def get_date():
     today = datetime.date.today().strftime("%Y/%m/%d")
-
     hour = time.strftime("%I:%M %p")
     request_date = str(today) + " " + str(hour)
-
     return request_date
+
+def sms_math_upper(sms_margin,price_today):
+    upperbound = (1 + sms_margin) * float(price_today)
+    return upperbound
+    
+
+def sms_math_lower(sms_margin, price_yesterday):           
+    lowerbound = (1 - sms_margin) * float(price_yesterday)
+    return lowerbound
 
 if __name__ == "__main__":
 
@@ -153,10 +160,7 @@ if __name__ == "__main__":
 
         #3. GET DATES
             request_date = get_date()
-            #today = datetime.date.today().strftime("%Y/%m/%d")
 
-            #hour = time.strftime("%I:%M %p")
-            #request_date = str(today) + " " + str(hour)
 
         #4. RECOMMENDATIONS
             margin = 0.30
@@ -221,9 +225,10 @@ if __name__ == "__main__":
             price_today = prices_list_no_usd[0]
             price_yesterday = prices_list_no_usd[1]
 
-            
-            upperbound = (1 + sms_margin) * float(price_today)
-            lowerbound = (1 - sms_margin) * float(price_yesterday)
+            lowerbound = sms_math_lower(sms_margin,price_yesterday)
+            upperbound = sms_math_upper(sms_margin,price_today)
+            #upperbound = (1 + sms_margin) * float(price_today)
+            #lowerbound = (1 - sms_margin) * float(price_yesterday)
             
             format_price_today = prices_list[0]
             format_price_yesterday = prices_list[1]
