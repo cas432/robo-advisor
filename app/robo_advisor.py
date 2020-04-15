@@ -4,6 +4,7 @@ import os
 import datetime
 import time
 import requests
+import pytest
 import plotly
 import plotly.graph_objs as go
 
@@ -18,13 +19,14 @@ symbols = []
 x=0
 i=0
 
+def to_usd(my_price):
+    '''Convert numeric value into currency formatting'''
+    return f"${my_price:,.2f}"
 
 print("\nWelcome to our automated stock advisory service!\n")
 print("Please enter any stock(s) that you want to know more about (Max of 5 at a time).")
 print("When finished, type 'DONE'.\n")
 
-def to_usd(my_price):
-    return "${0:,.2f}".format(my_price)
 
 api_key = os.environ.get("ALPHAVANTAGE_API_KEY","OOPS, please specify env var called 'ALPHAVANTAGE_API_KEY'")
 
