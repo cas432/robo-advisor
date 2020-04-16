@@ -61,7 +61,26 @@ def get_url(s,api_key):
     request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
     response = requests.get(request_url)
     return response
+
+def parse_response(response):
+    parsed_response = json.loads(response.text)
+    return parsed_response
+
+def calc_recent_high(tsd,date,high_prices):
+    high_price = tsd[date]["2. high"]
+    high_prices.append(float(high_price))
+    recent_high = max(high_prices)
+    return recent_high
     
+def calc_recent_low(tsd,date,low_prices):
+    low_price = tsd[date]["3. low"]
+    low_prices.append(float(low_price))
+    recent_low = min(low_prices)
+    return recent_low
+
+def calc_close_price(tsd,date):
+    close_price = tsd[date]["4. close"]
+    return close_price
 
 if __name__ == "__main__":
 
@@ -107,21 +126,11 @@ if __name__ == "__main__":
         prices_list = []
         prices_list_no_usd = []
 
+        #Get URL
         response = get_url(s,api_key)
-        print(json.loads(response.text).keys())
-        exit()
-
-       
-        #request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
-        
-        
-        response = requests.get(request_url)
-        print(json.loads(response.text).keys())
-        exit()
-
-    
-        parsed_response = json.loads(response.text)
-        
+           
+        #Parse scraped text
+        parsed_response = parse_response(response)
         
         x = x + 1 #keep counter for numbers
 
@@ -143,18 +152,14 @@ if __name__ == "__main__":
             low_prices = []
 
             for date in dates:
-                high_price = tsd[date]["2. high"]
-                high_prices.append(float(high_price))
-                low_price = tsd[date]["3. low"]
-                low_prices.append(float(low_price))
-
-                close_price = tsd[date]["4. close"]
+                recent_high = calc_recent_high(tsd,date,high_prices)
+                recent_low = calc_recent_low(tsd,date,low_prices)
+                close_price = calc_close_price(tsd,date)
+                
                 prices_list.append(to_usd(float(close_price)))
                 prices_list_no_usd.append(float(close_price))
 
-            recent_high = max(high_prices)
-            recent_low = min(low_prices)
-
+          
         
             csv_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "prices_" + s + ".csv")
 
