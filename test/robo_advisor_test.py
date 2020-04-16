@@ -1,5 +1,7 @@
-from app.robo_advisor import to_usd, calc_recent_high, calc_recent_low, calc_close_price, get_url, sms_math_lower, sms_math_upper,threshold_calc
-import json 
+from app.robo_advisor import to_usd, parse_response, calc_recent_high, calc_recent_low, calc_close_price, get_url, sms_math_lower, sms_math_upper,threshold_calc
+import json
+import pytest
+import os
 
 def test_to_usd():
 
@@ -23,11 +25,18 @@ def test_calc_recent_low():
     assert low == 79.4
 
 
-def test_get_url():
-    response = get_url("d","N9PA30F4N9P35ETT")
-    keys = json.loads(response.text).keys()
-    assert "Meta Data" in keys
-    assert "Time Series (Daily)" in keys
+def test_parse_response():
+
+    s = "FB"
+    parsed_response = parse_response(s)
+    assert isinstance(parsed_response, dict)
+    assert "Meta Data" in parsed_response.keys()
+    assert "Time Series (Daily)" in parsed_response.keys()
+    assert parsed_response["Meta Data"]["2. Symbol"] == s
+
+
+
+
 
 
 def test_sms_math_lower():

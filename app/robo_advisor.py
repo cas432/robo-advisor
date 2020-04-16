@@ -19,6 +19,8 @@ symbols = []
 x=0
 i=0
 
+api_key = os.environ.get("ALPHAVANTAGE_API_KEY","OOPS, please specify env var called 'ALPHAVANTAGE_API_KEY'")
+
 def to_usd(my_price):
     '''Convert numeric value into currency formatting'''
     return f"${my_price:,.2f}"
@@ -55,14 +57,16 @@ def sms_math_lower(sms_margin, price_yesterday):
     lowerbound = (1 - sms_margin) * float(price_yesterday)
     return lowerbound
 
-def get_url(s,api_key):
+def get_url(s):
     '''get URL'''
     request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
     response = requests.get(request_url)
     return response
 
-def parse_response(response):
+def parse_response(s):
     '''get info from URL source'''
+    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
+    response = requests.get(request_url)
     parsed_response = json.loads(response.text)
     return parsed_response
 
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     print("When finished, type 'DONE'.\n")
 
 
-    api_key = os.environ.get("ALPHAVANTAGE_API_KEY","OOPS, please specify env var called 'ALPHAVANTAGE_API_KEY'")
+  
 
     #1.  INPUT VALIDATION
     while True: 
@@ -153,8 +157,9 @@ if __name__ == "__main__":
         prices_list_no_usd = []
 
         #Get URL
-        response = get_url(s,api_key)
-           
+        response = get_url(s)
+
+       
         #Parse scraped text
         parsed_response = parse_response(response)
         
