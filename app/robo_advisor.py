@@ -70,26 +70,31 @@ def parse_response(s):
     return parsed_response
 
 def calc_recent_high(tsd,date,high_prices):
+    '''calculate recent high price'''
     high_price = tsd[date]["2. high"]
     high_prices.append(float(high_price))
     recent_high = max(high_prices)
     return recent_high
     
 def calc_recent_low(tsd,date,low_prices):
+    '''calculate recent low price'''
     low_price = tsd[date]["3. low"]
     low_prices.append(float(low_price))
     recent_low = min(low_prices)
     return recent_low
 
 def calc_close_price(tsd,date):
+    '''calculate closing price'''
     close_price = tsd[date]["4. close"]
     return close_price
 
 def threshold_calc(margin,recent_low):
+    '''calculate threshold for rec'''
     threshold = (margin + 1) * recent_low
     return threshold
 
 def write_csv(csv_file_path,csv_headers,dates,tsd):
+    '''write out file'''
     with open(csv_file_path, "w") as csv_file: # "w" means "open the file for writing"
                 writer = csv.DictWriter(csv_file, fieldnames=csv_headers, lineterminator = '\n')
                 writer.writeheader() # uses fieldnames set above
