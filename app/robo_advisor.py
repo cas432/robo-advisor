@@ -15,11 +15,10 @@ from twilio.rest import Client
 
 load_dotenv()
 
+api_key = os.environ.get("ALPHAVANTAGE_API_KEY","OOPS, please specify env var called 'ALPHAVANTAGE_API_KEY'")
 symbols = []
 x=0
 i=0
-
-api_key = os.environ.get("ALPHAVANTAGE_API_KEY","OOPS, please specify env var called 'ALPHAVANTAGE_API_KEY'")
 
 def to_usd(my_price):
     '''Convert numeric value into currency formatting'''
@@ -64,38 +63,33 @@ def get_url(s):
     return response
 
 def parse_response(s):
-    '''get info from URL source'''
+    '''get text info from URL source'''
     request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
     response = requests.get(request_url)
     parsed_response = json.loads(response.text)
     return parsed_response
 
 def calc_recent_high(tsd,date,high_prices):
-    '''calculate recent high'''
     high_price = tsd[date]["2. high"]
     high_prices.append(float(high_price))
     recent_high = max(high_prices)
     return recent_high
     
 def calc_recent_low(tsd,date,low_prices):
-    '''calculate recent low'''
     low_price = tsd[date]["3. low"]
     low_prices.append(float(low_price))
     recent_low = min(low_prices)
     return recent_low
 
 def calc_close_price(tsd,date):
-    '''calculate closing price'''
     close_price = tsd[date]["4. close"]
     return close_price
 
 def threshold_calc(margin,recent_low):
-    '''calculate threshold'''
     threshold = (margin + 1) * recent_low
     return threshold
 
 def write_csv(csv_file_path,csv_headers,dates,tsd):
-    '''write data to csv file'''
     with open(csv_file_path, "w") as csv_file: # "w" means "open the file for writing"
                 writer = csv.DictWriter(csv_file, fieldnames=csv_headers, lineterminator = '\n')
                 writer.writeheader() # uses fieldnames set above
@@ -120,7 +114,7 @@ if __name__ == "__main__":
     print("When finished, type 'DONE'.\n")
 
 
-  
+    
 
     #1.  INPUT VALIDATION
     while True: 
@@ -158,10 +152,9 @@ if __name__ == "__main__":
 
         #Get URL
         response = get_url(s)
-
-       
+           
         #Parse scraped text
-        parsed_response = parse_response(response)
+        parsed_response = parse_response(s)
         
         x = x + 1 #keep counter for numbers
 

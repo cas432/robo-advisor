@@ -35,10 +35,6 @@ def test_parse_response():
     assert parsed_response["Meta Data"]["2. Symbol"] == s
 
 
-
-
-
-
 def test_sms_math_lower():
     result = sms_math_lower(0.05,100)
     assert result == 95
@@ -51,6 +47,4 @@ def test_sms_math_upper():
 def test_threshold_calc():
     result = threshold_calc(0.10,1000)
     assert result == 1100
-
-
 
