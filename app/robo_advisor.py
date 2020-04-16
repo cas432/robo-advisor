@@ -29,58 +29,84 @@ def print_message(message):
     print(message)
     print("-------------------------")
 
-def get_url(s, api_key):
-    '''Get URL'''
-    request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
-    response = requests.get(request_url)
-    parsed_response = json.loads(response.text)
-    return parsed_response
 
 def get_graph(dates, prices_list_no_usd,s):
+    '''Plot graph'''
     plotly.offline.plot({
     "data": [go.Scatter(x=dates, y=prices_list_no_usd)],
     "layout": go.Layout(yaxis=dict(tickprefix="$", tickangle=45), title="Historical Stock Prices: " + s)
     }, auto_open=True) 
 
 def get_date():
+    '''Get date infomration'''
     today = datetime.date.today().strftime("%Y/%m/%d")
     hour = time.strftime("%I:%M %p")
     request_date = str(today) + " " + str(hour)
     return request_date
 
 def sms_math_upper(sms_margin,price_today):
+    '''calculate upper bound'''
     upperbound = (1 + sms_margin) * float(price_today)
     return upperbound
     
 
-def sms_math_lower(sms_margin, price_yesterday):           
+def sms_math_lower(sms_margin, price_yesterday):   
+    '''calculate lower bound'''        
     lowerbound = (1 - sms_margin) * float(price_yesterday)
     return lowerbound
 
 def get_url(s,api_key):
+    '''get URL'''
     request_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={s}&apikey={api_key}"
     response = requests.get(request_url)
     return response
 
 def parse_response(response):
+    '''get info from URL source'''
     parsed_response = json.loads(response.text)
     return parsed_response
 
 def calc_recent_high(tsd,date,high_prices):
+    '''calculate recent high'''
     high_price = tsd[date]["2. high"]
     high_prices.append(float(high_price))
     recent_high = max(high_prices)
     return recent_high
     
 def calc_recent_low(tsd,date,low_prices):
+    '''calculate recent low'''
     low_price = tsd[date]["3. low"]
     low_prices.append(float(low_price))
     recent_low = min(low_prices)
     return recent_low
 
 def calc_close_price(tsd,date):
+    '''calculate closing price'''
     close_price = tsd[date]["4. close"]
     return close_price
+
+def threshold_calc(margin,recent_low):
+    '''calculate threshold'''
+    threshold = (margin + 1) * recent_low
+    return threshold
+
+def write_csv(csv_file_path,csv_headers,dates,tsd):
+    '''write data to csv file'''
+    with open(csv_file_path, "w") as csv_file: # "w" means "open the file for writing"
+                writer = csv.DictWriter(csv_file, fieldnames=csv_headers, lineterminator = '\n')
+                writer.writeheader() # uses fieldnames set above
+                for date in dates:
+                    daily_prices = tsd[date]
+                
+                    writer.writerow({
+                        "timestamp": date,
+                        "open": daily_prices["1. open"],
+                        "high": daily_prices["2. high"],
+                        "low": daily_prices["3. low"],
+                        "close": daily_prices["4. close"],
+                        "volume": daily_prices["5. volume"]
+                    })
+
 
 if __name__ == "__main__":
 
@@ -158,27 +184,14 @@ if __name__ == "__main__":
                 
                 prices_list.append(to_usd(float(close_price)))
                 prices_list_no_usd.append(float(close_price))
-
-          
+         
         
             csv_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "prices_" + s + ".csv")
+      
 
             csv_headers = ["timestamp", "open", "high", "low", "close", "volume"]
 
-            with open(csv_file_path, "w") as csv_file: # "w" means "open the file for writing"
-                writer = csv.DictWriter(csv_file, fieldnames=csv_headers, lineterminator = '\n')
-                writer.writeheader() # uses fieldnames set above
-                for date in dates:
-                    daily_prices = tsd[date]
-                
-                    writer.writerow({
-                        "timestamp": date,
-                        "open": daily_prices["1. open"],
-                        "high": daily_prices["2. high"],
-                        "low": daily_prices["3. low"],
-                        "close": daily_prices["4. close"],
-                        "volume": daily_prices["5. volume"]
-                    })
+            write_csv(csv_file_path,csv_headers,dates,tsd)
 
         #3. GET DATES
             request_date = get_date()
@@ -186,7 +199,8 @@ if __name__ == "__main__":
 
         #4. RECOMMENDATIONS
             margin = 0.30
-            threshold = (margin + 1) * recent_low
+            
+            threshold = threshold_calc(margin,recent_low)
 
             prev_year = dates[1]
             prev_price = tsd[prev_year]["4. close"]
